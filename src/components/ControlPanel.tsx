@@ -74,7 +74,7 @@ const ControlPanel = () => {
       )
   }
 
-  // Use lastClickedItem for API call to backend, lastClickedItem is a relative path to the selected file
+  // Use lastClickedItem for API call to backend, lastClickedItem is a relative path to the choosen file
   const [lastClickedItem, setLastClickedItem] = useState<string | null>(null);
   const handleLastClickedItemChange = (itemId: string | null) => {
     setLastClickedItem(itemId);
@@ -144,21 +144,17 @@ const ControlPanel = () => {
   return (
     <div className="controls">
       <div className='bar'>
-      <TextField
+        <TextField
           id="outlined-basic"
           label="Search"
           variant="outlined"
-          placeholder="myFavoriteFunction()..."
+          placeholder='myFavoriteFunction()...'
           onChange={(event) => onSearch(event.target.value)}
-          disabled={!lastClickedItem} // Disable the search if the file is not selected
+          style={{width: "50%"}}
         />
-        {!lastClickedItem && (
-          <Typography variant="body2" color="textSecondary" sx={{ mt: 1 }}>
-            Please select a file to search a function.
-          </Typography>
-        )}
-        <Button variant="contained" color="success">Analyze</Button>
+        <Button style={{height: "40%"}} variant="contained" color="success">Analyze</Button>
         <Button
+          style={{height: "40%"}}
           component="label"
           role={undefined}
           variant="contained"
