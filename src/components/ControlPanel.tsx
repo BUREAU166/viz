@@ -140,9 +140,11 @@ const ControlPanel = () => {
           variant="outlined"
           placeholder='myFavoriteFunction()...'
           onChange={(event) => onSearch(event.target.value)}
+          style={{width: "50%"}}
         />
-        <Button variant="contained" color="success">Analyze</Button>
+        <Button style={{height: "40%"}} variant="contained" color="success">Analyze</Button>
         <Button
+          style={{height: "40%"}}
           component="label"
           role={undefined}
           variant="contained"
