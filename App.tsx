@@ -1,13 +1,5 @@
 import React, { useCallback, useState } from 'react';
-import {
-  ReactFlow,
-  addEdge,
-  ConnectionLineType,
-  useNodesState,
-  useEdgesState,
-} from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
-import dagre from '@dagrejs/dagre';
 import './index.css';
 
 import HorizontalFlow from './src/components/HorizontalFlow'
