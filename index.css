@@ -13,5 +13,18 @@ body {
 .container {
   height: 100%;
   display: grid;
-  grid-template-columns: 70% 1fr;
+  grid-template-columns: 100% 1fr;
+  position: relative; /* Чтобы дочерние элементы могли использовать абсолютное позиционирование */
+}
+
+.controls {
+  position: absolute; /* Позиционирование поверх всего */
+  top: 0; /* Расположить сверху */
+  right: 0; /* Позиционирование справа */
+  width: 300px; /* Укажите ширину панели */
+  height: 100vh; /* Панель будет занимать всю высоту */
+  z-index: 10; /* Чтобы панель была поверх */
+  background-color: rgba(255, 255, 255, 0.8); /* Полупрозрачный фон */
+  padding: 20px; /* Немного отступов для содержимого */
+  box-shadow: -2px 0px 10px rgba(0, 0, 0, 0.1); /* Тень для панели */
 }
