@@ -37,7 +37,6 @@ export function App() {
           <HorizontalFlow />
         </div>
 
-        {/* Кнопка для скрытия/показа панели, теперь она слева и большая */}
         <button
           style={{
             position: 'absolute',
@@ -51,15 +50,14 @@ export function App() {
             border: 'none',
             borderRadius: '5px',
             cursor: 'pointer',
-            boxShadow: '0 4px 8px rgba(0, 0, 0, 0.2)',  // Добавлен эффект тени
-            transition: 'all 0.3s ease', // Плавный переход
+            boxShadow: '0 4px 8px rgba(0, 0, 0, 0.2)',  
+            transition: 'all 0.3s ease', 
           }}
           onClick={toggleControlPanel}
         >
           {isControlPanelVisible ? 'Hide Control Panel' : 'Show Control Panel'}
         </button>
 
-        {/* Условный рендеринг панели */}
         {isControlPanelVisible && <ControlPanel />}
       </div>
     </LegexContext.Provider>
