@@ -52,9 +52,14 @@ const ControlPanel = () => {
       console.log("new use info => ", currInfo)
     }
     finally {
-      handleUploadFile(file)
+      isZipFile(file) ? handleUploadProject(file) : handleUploadFile(file)
     }
   }
+
+  function isZipFile(file: File): boolean {
+    return file.type === 'application/zip' || file.name.toLowerCase().endsWith('.zip');
+  }
+
 
   const handleUploadFile = async (file: File) => {
     var data = new FormData()
@@ -70,8 +75,48 @@ const ControlPanel = () => {
         res => {
           console.log("sending", file)
           console.log(res)
+          mockJsonString()
         }
       )
+  }
+
+  function mockJsonString() {
+    const [jsonString, setJsonString] = useState<string | null>(null);
+    const [loadingError, setLoadingError] = useState<boolean>(false);
+
+    useEffect(() => {
+      // Here (or not here) should be response handling from backend, now I have mocked this in treeView.json in project root
+      fetch('../treeView.json')
+          .then((response) => response.json())
+          .then((data) => {
+            setJsonString(JSON.stringify(data));
+            setLoadingError(false);
+          })
+          .catch((error) => {
+            console.error("Error on treeView json loading:", error);
+            setLoadingError(true);
+          });
+    }, []);
+  }
+
+  const handleUploadProject = async (file: File) => {
+    const [jsonString, setJsonString] = useState<string | null>(null);
+    var data = new FormData()
+    data.append('file', file)
+    var status = await fetch(`http://localhost:5000/upload_project`, {
+      method: 'POST',
+      body: data,
+      headers: {
+        'Access-Control-Allow-Origin': '*'
+      }
+    })
+        .then(
+            res => {
+              console.log("sending", file)
+              console.log(res)
+              setJsonString(JSON.stringify(res))
+            }
+        )
   }
 
   // Use lastClickedItem for API call to backend, lastClickedItem is a relative path to the choosen file
@@ -84,20 +129,6 @@ const ControlPanel = () => {
   function loadAndRenderTreeView() {
     const [jsonString, setJsonString] = useState<string | null>(null);
     const [loadingError, setLoadingError] = useState<boolean>(false);
-
-    useEffect(() => {
-      // Here (or not here) should be response handling from backend, now I have mocked this in treeView.json in project root
-      fetch('../treeView.json')
-        .then((response) => response.json())
-        .then((data) => {
-          setJsonString(JSON.stringify(data));
-          setLoadingError(false);
-        })
-        .catch((error) => {
-          console.error("Error on treeView json loading:", error);
-          setLoadingError(true);
-        });
-    }, []);
 
     if (loadingError) {
       return (
