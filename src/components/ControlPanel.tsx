@@ -27,6 +27,10 @@ const ControlPanel = () => {
   const [fileMem, setFileMem] = useState<string>("");
   const [uploadedFile, setUploadedFile] = useState<File | null>(null)
 
+  const [jsonString, setJsonString] = useState<string | null>(null);
+  const [loadingError, setLoadingError] = useState<boolean>(false);
+
+
   function formatBytes(bytes: number, decimals = 2) {
     if (!+bytes) return '0 Bytes'
 
@@ -42,6 +46,7 @@ const ControlPanel = () => {
   const onUpload = (file: File) => {
     try {
       setFileName(file.name)
+      console.log("NEW FILE ", file.name)
       setFileMem(formatBytes(file.size))
       setUploadedFile(file)
       console.log("uploaded", file.name, "with size", fileMem, " | ", formatBytes(file.size), " | ", file.size)
@@ -80,10 +85,7 @@ const ControlPanel = () => {
       )
   }
 
-  function mockJsonString() {
-    const [jsonString, setJsonString] = useState<string | null>(null);
-    const [loadingError, setLoadingError] = useState<boolean>(false);
-
+  function mockJsonString() { 
     useEffect(() => {
       // Here (or not here) should be response handling from backend, now I have mocked this in treeView.json in project root
       fetch('../treeView.json')
@@ -100,8 +102,9 @@ const ControlPanel = () => {
   }
 
   const handleUploadProject = async (file: File) => {
-    const [jsonString, setJsonString] = useState<string | null>(null);
+    //const [jsonString, setJsonString] = useState<string | null>(null);
     var data = new FormData()
+    console.log("ZIP ? ", file.name)
     data.append('file', file)
     var status = await fetch(`http://localhost:5000/upload_project`, {
       method: 'POST',
@@ -111,11 +114,13 @@ const ControlPanel = () => {
       }
     })
         .then(
-            res => {
-              console.log("sending", file)
-              console.log(res)
-              setJsonString(JSON.stringify(res))
-            }
+            res => res.json()
+        )
+        .then(
+          data => {
+            console.log(data)
+            setJsonString(JSON.stringify(data))
+          }
         )
   }
 
@@ -127,8 +132,8 @@ const ControlPanel = () => {
 
   // TODO(Change this when we can get treeView.json from backend)
   function loadAndRenderTreeView() {
-    const [jsonString, setJsonString] = useState<string | null>(null);
-    const [loadingError, setLoadingError] = useState<boolean>(false);
+    //const [jsonString, setJsonString] = useState<string | null>(null);
+    //const [loadingError, setLoadingError] = useState<boolean>(false);
 
     if (loadingError) {
       return (
