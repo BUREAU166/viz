@@ -30,7 +30,7 @@ export default function ControlledExpansion({ jsonStructureString, onLastClicked
     }, [jsonStructureString]);
 
     React.useEffect(() => {
-        onLastClickedItemChange(lastClickedItem);
+        onLastClickedItemChange(lastClickedItem == null || !/\.[^.]+$/.test(lastClickedItem) ? null : lastClickedItem);
     }, [lastClickedItem, onLastClickedItemChange]);
 
     const handleExpandedItemsChange = (
@@ -42,6 +42,7 @@ export default function ControlledExpansion({ jsonStructureString, onLastClicked
 
     const handleExpandClick = () => {
         const allItems = getAllItemIds(projectStructure);
+        setLastClickedItem(null);
         setExpandedItems((oldExpanded) => (oldExpanded.length === 0 ? allItems : []));
     };
 
