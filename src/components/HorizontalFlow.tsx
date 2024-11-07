@@ -13,7 +13,8 @@ import {
 import '@xyflow/react/dist/style.css';
 import dagre from '@dagrejs/dagre';
 
-const mockServerData = {
+
+const mockData = JSON.stringify({
   vertices: [
     { id: 'classA', name: 'ClassA', type: 'class', group: 'group1' },
     { id: 'classB', name: 'ClassB', type: 'class', group: 'group1' },
@@ -48,15 +49,62 @@ const mockServerData = {
     { fromID: 'funcS', toID: 'funcR' },
     { fromID: 'funcR', toID: 'funcQ' },
     { fromID: 'funcQ', toID: 'funcP' },
-    { fromID: 'funcP', toID: 'classA' }, // Потенциальная коллизия (замкнутый цикл)
+    { fromID: 'funcP', toID: 'classA' }, 
   ],
+})
+
+const useFetchGraphData = () => {
+  const [data, setData] = useState<GraphData | null>(null);
+  const [error, setError] = useState<Error | null>(null);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        // make request here
+        const result = JSON.parse(mockData) as GraphData;
+        setData(result);
+      } catch (error) {
+        console.error(error);
+        setError(new Error('Ошибка при парсинге данных'));
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  return { data, error };
 };
+
+
+// const useFetchGraphData = () => {
+//   const [data, setData] = useState<GraphData | null>(null);
+//   const [error, setError] = useState<Error | null>(null);
+
+//   useEffect(() => {
+//     const fetchData = async () => {
+//       try {
+//         const response = await fetch('/api/endpoint'); 
+//         if (!response.ok) throw new Error('request error');
+//         const result = await response.json();
+//         setData(result);
+//       } catch (error) {
+//         console.error(error);
+//         setData(mockData); 
+//       } 
+//     };
+
+//     fetchData();
+//   }, []);
+
+//   return { data, error };
+// };
 
 const dagreGraph = new dagre.graphlib.Graph().setDefaultEdgeLabel(() => ({}));
 const nodeWidth = 172;
 const nodeHeight = 36;
 
 const GraphComponent = () => {
+  const { data, error } = useFetchGraphData();
   const [nodes, setNodes, onNodesChange] = useNodesState([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
   const [selectedGroup, setSelectedGroup] = useState(null);
@@ -65,36 +113,38 @@ const GraphComponent = () => {
   const position = { x: 0, y: 0 };
 
   useEffect(() => {
-    const initialNodes = mockServerData.vertices.map((vertex) => ({
-      id: vertex.id,
-      data: { label: vertex.name },
-      position,
-      group: vertex.group,  // Используем новое поле group
-      style: vertex.type === 'function'
-        ? { borderRadius: '15px', backgroundColor: 'lightblue' }
-        : { backgroundColor: 'lightgreen' }
-    }));
+    if (data) {
+      const initialNodes = data.vertices.map((vertex) => ({
+        id: vertex.id,
+        data: { label: vertex.name },
+        position,
+        group: vertex.group,
+        style: vertex.type === 'function'
+          ? { borderRadius: '15px', backgroundColor: 'lightblue' }
+          : { backgroundColor: 'lightgreen' }
+      }));
 
-    const initialEdges = mockServerData.edges.map((edge) => ({
-      id: `e${edge.fromID}-${edge.toID}`,
-      source: edge.fromID,
-      target: edge.toID,
-      type: edgeType,
-      animated: true,
-      markerEnd: { type: 'arrowclosed' }
-    }));
+      const initialEdges = data.edges.map((edge) => ({
+        id: `e${edge.fromID}-${edge.toID}`,
+        source: edge.fromID,
+        target: edge.toID,
+        type: edgeType,
+        animated: true,
+        markerEnd: { type: 'arrowclosed' }
+      }));
 
-    const layoutedElements = getLayoutedElements(initialNodes, initialEdges);
-    setNodes(layoutedElements.nodes);
-    setEdges(layoutedElements.edges);
-  }, []);
+      const layoutedElements = getLayoutedElements(initialNodes, initialEdges);
+      setNodes(layoutedElements.nodes);
+      setEdges(layoutedElements.edges);
+    }
+  }, [data]);
 
   const getLayoutedElements = (nodes, edges) => {
     dagreGraph.setGraph({
-      rankdir: 'LR', // Горизонтальная ориентация
-      nodesep: 50,   // Пространство между узлами
-      edgesep: 200,   // Пространство между рёбрами
-      ranksep: 50   // Пространство между уровнями (ветвями)
+      rankdir: 'LR',
+      nodesep: 50,
+      edgesep: 200,
+      ranksep: 50
     });
 
     nodes.forEach((node) => {
@@ -132,19 +182,22 @@ const GraphComponent = () => {
   );
 
   const onNodeClick = useCallback((event, node) => {
-    setSelectedGroup(node.group);  // Обновляем состояние группы
+    setSelectedGroup(node.group);
   }, []);
 
   const onPaneClick = useCallback(() => {
-    setSelectedGroup(null);  // Снимаем выделение
+    setSelectedGroup(null);
   }, []);
 
   const getNodeStyle = (node) => {
     if (selectedGroup && node.group === selectedGroup) {
-      return { border: '2px solid red', backgroundColor: 'lightcoral' };  // Выделяем только по полю group
+      return { border: '2px solid red', backgroundColor: 'lightcoral' };
     }
     return node.style;
   };
+
+  // TODO: rm it debug info
+  if (error) return <div>Ошибка при загрузке данных: {error.message}</div>;
 
   return (
     <ReactFlowProvider>
@@ -163,10 +216,9 @@ const GraphComponent = () => {
           connectionLineType={ConnectionLineType.SmoothStep}
           fitView
         >
-          {/* Добавляем MiniMap */}
           <MiniMap 
-            nodeColor={(node) => node.type === 'function' ? 'blue' : 'green'} // Цвета для разных типов
-            pannable={true} // Делаем миникарту перемещаемой
+            nodeColor={(node) => node.type === 'function' ? 'blue' : 'green'}
+            pannable={true}
             position="bottom-left"
           />
         </ReactFlow>
