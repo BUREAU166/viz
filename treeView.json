@@ -1,0 +1,18 @@
+{
+    "src": {
+      "main.c": null,
+      "utils.c": null,
+      "utils.h": null,
+      "math": {
+        "math_utils.c": null,
+        "math_utils.h": null
+      }
+    },
+    "include": {
+      "project.h": null
+    },
+    "test": {
+      "test_main.c": null
+    }
+  }
+  

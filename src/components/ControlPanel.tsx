@@ -1,9 +1,10 @@
-import { Button, TextField } from '@mui/material/'
+import { Button, TextField, CircularProgress, Box, Typography } from '@mui/material/'
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import './style.css'
 import styled from '@emotion/styled';
 import { useLegexContext } from '../context/LegexContext';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import ControlledExpansion from './TreeView'
 
 const VisuallyHiddenInput = styled('input')({
   clip: 'rect(0 0 0 0)',
@@ -18,7 +19,7 @@ const VisuallyHiddenInput = styled('input')({
 });
 
 const ControlPanel = () => {
-  
+
   const context = useLegexContext();
 
   const [stdOut, cetStdOut] = useState<string>("");
@@ -36,7 +37,7 @@ const ControlPanel = () => {
     const i = Math.floor(Math.log(bytes) / Math.log(k))
 
     return `${parseFloat((bytes / Math.pow(k, i)).toFixed(dm))} ${sizes[i]}`
-  } 
+  }
 
   const onUpload = (file: File) => {
     try {
@@ -44,7 +45,7 @@ const ControlPanel = () => {
       setFileMem(formatBytes(file.size))
       setUploadedFile(file)
       console.log("uploaded", file.name, "with size", fileMem, " | ", formatBytes(file.size), " | ", file.size)
-  
+
       var currInfo = context.userInfo
       currInfo.dirName = file.name
       context.setUserInfo(currInfo)
@@ -62,15 +63,65 @@ const ControlPanel = () => {
       method: 'POST',
       body: data,
       headers: {
-        'Access-Control-Allow-Origin':'*'
+        'Access-Control-Allow-Origin': '*'
       }
     })
-    .then(
-      res => { 
-        console.log("sending", file)
-        console.log(res)
-      }
-    )
+      .then(
+        res => {
+          console.log("sending", file)
+          console.log(res)
+        }
+      )
+  }
+
+  // TODO(Change this when we can get treeView.json from backend)
+  function loadAndRenderTreeView() {
+    const [jsonString, setJsonString] = useState<string | null>(null);
+    const [loadingError, setLoadingError] = useState<boolean>(false);
+
+    useEffect(() => {
+      // Here (or not here) should be response handling from backend, now I have mocked this in treeView.json in project root
+      fetch('../treeView.json')
+        .then((response) => response.json())
+        .then((data) => {
+          setJsonString(JSON.stringify(data));
+          setLoadingError(false);
+        })
+        .catch((error) => {
+          console.error("Ошибка загрузки JSON:", error);
+          setLoadingError(true);
+        });
+    }, []);
+
+    if (loadingError) {
+      return (
+        <Box
+          display="flex"
+          justifyContent="center"
+          alignItems="center"
+          height="30vh"
+        >
+          <Typography color="textSecondary">
+            Failed to load project. Please upload your project to view the tree structure.
+          </Typography>
+        </Box>
+      );
+    }
+
+    if (jsonString) {
+      return <ControlledExpansion jsonStructureString={jsonString} />;
+    }
+
+    return (
+      <Box
+        display="flex"
+        justifyContent="center"
+        alignItems="center"
+        height="100vh"
+      >
+        <CircularProgress />
+      </Box>
+    );
   }
 
   const onSearch = (funcName: string) => {
@@ -80,13 +131,13 @@ const ControlPanel = () => {
     console.log("new use info => ", currInfo)
   }
 
-  return(
+  return (
     <div className="controls">
       <div className='bar'>
-        <TextField 
-          id="outlined-basic" 
-          label="Search" 
-          variant="outlined" 
+        <TextField
+          id="outlined-basic"
+          label="Search"
+          variant="outlined"
           placeholder='myFavoriteFunction()...'
           onChange={(event) => onSearch(event.target.value)}
         />
@@ -96,7 +147,7 @@ const ControlPanel = () => {
           role={undefined}
           variant="contained"
           tabIndex={-1}
-          startIcon={<CloudUploadIcon/>}
+          startIcon={<CloudUploadIcon />}
         >
           Upload files
           <VisuallyHiddenInput
@@ -106,8 +157,8 @@ const ControlPanel = () => {
           />
         </Button>
       </div>
-      <div className='view'>
-        <a>Goodbye</a>
+      <div>
+        {loadAndRenderTreeView()}
       </div>
     </div>
   )
