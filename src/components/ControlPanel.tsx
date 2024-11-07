@@ -116,7 +116,7 @@ const ControlPanel = () => {
 
     if (jsonString) {
       return <ControlledExpansion
-      // Artem: Pass treeView json here
+        // Artem: Pass treeView json here
         jsonStructureString={jsonString}
         onLastClickedItemChange={handleLastClickedItemChange}
       />;
@@ -150,11 +150,23 @@ const ControlPanel = () => {
           variant="outlined"
           placeholder='myFavoriteFunction()...'
           onChange={(event) => onSearch(event.target.value)}
-          style={{width: "50%"}}
+          style={{ width: "50%" }}
+          disabled={!lastClickedItem} // Disable the search if the file is not selected
         />
-        <Button style={{height: "40%"}} variant="contained" color="success">Analyze</Button>
+        {!lastClickedItem && (
+          <Typography variant="body1" color="textSecondary" sx={{ mt: 0 }}>
+            Please select a file to search a function.
+          </Typography>
+        )}
         <Button
-          style={{height: "40%"}}
+          style={{ height: "40%" }}
+          variant="contained"
+          color="success"
+        >
+          Analyze
+        </Button>
+        <Button
+          style={{ height: "40%" }}
           component="label"
           role={undefined}
           variant="contained"
