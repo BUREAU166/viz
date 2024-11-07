@@ -94,7 +94,7 @@ const ControlPanel = () => {
           setLoadingError(false);
         })
         .catch((error) => {
-          console.error("Ошибка загрузки JSON:", error);
+          console.error("Error on treeView json loading:", error);
           setLoadingError(true);
         });
     }, []);
