@@ -1,0 +1,17 @@
+.controls {
+  border-left: 1px solid black;
+  display: grid;
+  grid-template-rows: 10% 1fr;
+}
+
+.bar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-bottom: 1px solid gray;
+  gap: 10px;
+}
+
+.display {
+
+}
