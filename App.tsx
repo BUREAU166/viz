@@ -19,7 +19,8 @@ export function App() {
   const userInfo: Info = {
     funcName: "",
     dirName: "",
-    funcPath: ""
+    funcPath: "",
+    stdOut: ""
   }
 
   const [info, setUserInfo] = useState<Info | null>(null)
