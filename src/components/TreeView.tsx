@@ -12,9 +12,10 @@ type ProjectStructure = {
 
 type ControlledExpansionProps = {
     jsonStructureString: string;
+    onLastClickedItemChange: (itemId: string | null) => void;
 };
 
-export default function ControlledExpansion({ jsonStructureString }: ControlledExpansionProps) {
+export default function ControlledExpansion({ jsonStructureString, onLastClickedItemChange }: ControlledExpansionProps) {
     const [projectStructure, setProjectStructure] = React.useState<ProjectStructure>({});
     const [expandedItems, setExpandedItems] = React.useState<string[]>([]);
     const [lastClickedItem, setLastClickedItem] = React.useState<string | null>(null);
@@ -27,6 +28,10 @@ export default function ControlledExpansion({ jsonStructureString }: ControlledE
             console.error('Error on parsing treeView json respone: ', error);
         }
     }, [jsonStructureString]);
+
+    React.useEffect(() => {
+        onLastClickedItemChange(lastClickedItem);
+    }, [lastClickedItem, onLastClickedItemChange]);
 
     const handleExpandedItemsChange = (
         event: React.SyntheticEvent,

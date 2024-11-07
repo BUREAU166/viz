@@ -74,6 +74,12 @@ const ControlPanel = () => {
       )
   }
 
+  // Use lastClickedItem for API call to backend, lastClickedItem is a relative path to the choosen file
+  const [lastClickedItem, setLastClickedItem] = useState<string | null>(null);
+  const handleLastClickedItemChange = (itemId: string | null) => {
+    setLastClickedItem(itemId);
+  };
+
   // TODO(Change this when we can get treeView.json from backend)
   function loadAndRenderTreeView() {
     const [jsonString, setJsonString] = useState<string | null>(null);
@@ -109,7 +115,11 @@ const ControlPanel = () => {
     }
 
     if (jsonString) {
-      return <ControlledExpansion jsonStructureString={jsonString} />;
+      return <ControlledExpansion
+      // Artem: Pass treeView json here
+        jsonStructureString={jsonString}
+        onLastClickedItemChange={handleLastClickedItemChange}
+      />;
     }
 
     return (
