@@ -22,7 +22,7 @@ export function App() {
     stdOut: ""
   }
 
-  const [info, setUserInfo] = useState<Info | null>(null);
+  const [info, setUserInfo] = useState<Info>(userInfo);
   const [isControlPanelVisible, setControlPanelVisible] = useState(true); // Состояние для отображения панели
 
   // Функция для переключения видимости панели
@@ -31,7 +31,7 @@ export function App() {
   };
 
   return (
-    <LegexContext.Provider value={{ userInfo, setUserInfo }}>
+    <LegexContext.Provider value={{ info, setUserInfo }}>
       <div className="container">
         <div style={{ overflow: 'none', position: 'unset' }}>
           <HorizontalFlow />

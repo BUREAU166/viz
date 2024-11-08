@@ -51,8 +51,9 @@ const ControlPanel = () => {
       setUploadedFile(file)
       console.log("uploaded", file.name, "with size", fileMem, " | ", formatBytes(file.size), " | ", file.size)
 
-      var currInfo = context.userInfo
-      currInfo.dirName = file.name
+      var currInfo = context.info
+      currInfo.dirName = file.name.replace(/\.[^/.]+$/, "")
+      
       context.setUserInfo(currInfo)
       console.log("new use info => ", currInfo)
     }
@@ -85,6 +86,20 @@ const ControlPanel = () => {
       )
   }
 
+  const handleAnalyze = async () => {
+    console.log("funcName ", context.info.funcName, " dir ", context.info.dirName)
+    var status = await fetch(`http://localhost:5000/analyze?func_name=${context.info.funcName}&file_name=${context.info.dirName}`)
+    .then(
+      res => console.log(res)
+    )
+    // .then(
+    //   data => {
+    //     console.log(data)
+
+    //   }
+    // )
+  }
+
   function mockJsonString() { 
     useEffect(() => {
       // Here (or not here) should be response handling from backend, now I have mocked this in treeView.json in project root
@@ -105,6 +120,7 @@ const ControlPanel = () => {
     //const [jsonString, setJsonString] = useState<string | null>(null);
     var data = new FormData()
     console.log("ZIP ? ", file.name)
+
     data.append('file', file)
     var status = await fetch(`http://localhost:5000/upload_project`, {
       method: 'POST',
@@ -127,7 +143,16 @@ const ControlPanel = () => {
   // Use lastClickedItem for API call to backend, lastClickedItem is a relative path to the choosen file
   const [lastClickedItem, setLastClickedItem] = useState<string | null>(null);
   const handleLastClickedItemChange = (itemId: string | null) => {
-    setLastClickedItem(itemId);
+    setLastClickedItem(itemId)
+    var currInfo = context.info
+
+    // currInfo.dirName = currInfo.dirName.match(/(.*)[\/\\]/)[1]||'';
+
+    if(lastClickedItem) {
+      currInfo.dirName = lastClickedItem
+      console.log(" -- new info", currInfo.dirName)
+      context.setUserInfo(currInfo)
+    }
   };
 
   // TODO(Change this when we can get treeView.json from backend)
@@ -171,10 +196,11 @@ const ControlPanel = () => {
   }
 
   const onSearch = (funcName: string) => {
-    var currInfo = context.userInfo
+    console.log("old info => ", context.info)
+    var currInfo = context.info
     currInfo.funcName = funcName
     context.setUserInfo(currInfo)
-    console.log("new use info => ", currInfo)
+    console.log("new use info => ", context.info)
   }
 
   return (
@@ -198,6 +224,7 @@ const ControlPanel = () => {
           style={{ height: "40%" }}
           variant="contained"
           color="success"
+          onClick={() => handleAnalyze()}
         >
           Analyze
         </Button>

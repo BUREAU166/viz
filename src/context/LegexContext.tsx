@@ -2,8 +2,8 @@ import { createContext, SetStateAction, Dispatch, useContext } from "react";
 import { Info } from "../@types/info";
 
 export type LegexContextType = {
-  userInfo: Info
-  setUserInfo: Dispatch<SetStateAction<Info | null>>
+  info: Info
+  setUserInfo: Dispatch<SetStateAction<Info>>
   //getTable: (filename: string, start_row: number, count: number) => Promise<Csv>
 };
 
