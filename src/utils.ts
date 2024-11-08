@@ -27,6 +27,12 @@ export function parseLabel(label: string): { type: string; name: string } {
     };
 }
 
+const getType = (label: string) => {
+    if(label.includes("ClassDecl")) return "class"
+    if(label.includes("FunctionDecl")) return "function"
+    return "none"
+}
+
 export async function parseDotFile(dotContent: string): Promise<GraphJson> {
     const graphviz = await Graphviz.load();
     const dotGraph = await graphviz.layout(dotContent, 'json');
@@ -34,23 +40,28 @@ export async function parseDotFile(dotContent: string): Promise<GraphJson> {
 
     const vertices: Vertex[] = [];
     const edges: Edge[] = [];
-
+    console.log("PARSED DATA", parsedData)
     parsedData.objects.forEach((node: any) => {
-        const { type, name } = parseLabel(node.label);
-        vertices.push({
-            id: node.name,
-            name: name || node.name,
-            type,
-            group: "class"
-        });
+        if(node.label) {
+            //const { type, name } = parseLabel(node.label);
+            vertices.push({
+                id: JSON.stringify(node._gvid),
+                name: node.label,
+                type: getType(node.label),
+                group: "class"
+            });
+        }
+       
     });
 
     parsedData.edges.forEach((edge: any) => {
         edges.push({
-            fromID: edge.tail,
-            toID: edge.head,
+            fromID: JSON.stringify(edge.tail),
+            toID: JSON.stringify(edge.head),
         });
     });
+
+    //console.log("PARSED", parsedData)
 
     return { vertices, edges };
 }

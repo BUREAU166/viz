@@ -12,9 +12,9 @@ import {
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 import dagre from '@dagrejs/dagre';
+import { useLegexContext } from '../context/LegexContext';
 
-
-const mockData = JSON.stringify({
+export const exJson = {
   vertices: [
     { id: 'classA', name: 'ClassA', type: 'class', group: 'group1' },
     { id: 'classB', name: 'ClassB', type: 'class', group: 'group1' },
@@ -51,7 +51,9 @@ const mockData = JSON.stringify({
     { fromID: 'funcQ', toID: 'funcP' },
     { fromID: 'funcP', toID: 'classA' }, 
   ],
-})
+}
+
+const mockData = JSON.stringify(exJson)
 
 const useFetchGraphData = () => {
   const [data, setData] = useState<GraphData | null>(null);
@@ -104,78 +106,23 @@ const nodeWidth = 172;
 const nodeHeight = 36;
 
 const GraphComponent = () => {
+  const context = useLegexContext();
+  
   const { data, error } = useFetchGraphData();
-  const [nodes, setNodes, onNodesChange] = useNodesState([]);
-  const [edges, setEdges, onEdgesChange] = useEdgesState([]);
+  
   const [selectedGroup, setSelectedGroup] = useState(null);
 
   const edgeType = ConnectionLineType.SimpleBezier;
   const position = { x: 0, y: 0 };
 
-  useEffect(() => {
-    if (data) {
-      const initialNodes = data.vertices.map((vertex) => ({
-        id: vertex.id,
-        data: { label: vertex.name },
-        position,
-        group: vertex.group,
-        style: vertex.type === 'function'
-          ? { borderRadius: '15px', backgroundColor: 'lightblue' }
-          : { backgroundColor: 'lightgreen' }
-      }));
-
-      const initialEdges = data.edges.map((edge) => ({
-        id: `e${edge.fromID}-${edge.toID}`,
-        source: edge.fromID,
-        target: edge.toID,
-        type: edgeType,
-        animated: true,
-        markerEnd: { type: 'arrowclosed' }
-      }));
-
-      const layoutedElements = getLayoutedElements(initialNodes, initialEdges);
-      setNodes(layoutedElements.nodes);
-      setEdges(layoutedElements.edges);
-    }
-  }, [data]);
-
-  const getLayoutedElements = (nodes, edges) => {
-    dagreGraph.setGraph({
-      rankdir: 'LR',
-      nodesep: 50,
-      edgesep: 200,
-      ranksep: 50
-    });
-
-    nodes.forEach((node) => {
-      dagreGraph.setNode(node.id, { width: nodeWidth, height: nodeHeight });
-    });
-
-    edges.forEach((edge) => {
-      dagreGraph.setEdge(edge.source, edge.target);
-    });
-
-    dagre.layout(dagreGraph);
-
-    const layoutedNodes = nodes.map((node) => {
-      const nodeWithPosition = dagreGraph.node(node.id);
-      return {
-        ...node,
-        targetPosition: 'left',
-        sourcePosition: 'right',  
-        position: {
-          x: nodeWithPosition.x - nodeWidth / 2,
-          y: nodeWithPosition.y - nodeHeight / 2,
-        },
-      };
-    });
-
-    return { nodes: layoutedNodes, edges };
-  };
+  // useEffect(() => {
+  //   if (data) {
+  //     context.prepareGraph()
+  // }, [data]);
 
   const onConnect = useCallback(
     (params) =>
-      setEdges((eds) =>
+      context.setEdges((eds) =>
         addEdge({ ...params, type: edgeType, animated: true, markerEnd: { type: 'arrowclosed' } }, eds)
       ),
     []
@@ -199,17 +146,23 @@ const GraphComponent = () => {
   // TODO: rm it debug info
   if (error) return <div>Ошибка при загрузке данных: {error.message}</div>;
 
+  const getColor = (type: string) => {
+    if(type == "function") return 'blue'
+    if(type == "class") return 'green'
+    return 'gray'
+  }
+
   return (
     <ReactFlowProvider>
       <div style={{ width: '100%', height: '100vh' }}>
         <ReactFlow
-          nodes={nodes.map((node) => ({
+          nodes={context.nodes.map((node) => ({
             ...node,
             style: getNodeStyle(node),
           }))}
-          edges={edges}
-          onNodesChange={onNodesChange}
-          onEdgesChange={onEdgesChange}
+          edges={context.edges}
+          onNodesChange={context.onNodesChange}
+          onEdgesChange={context.onEdgesChange}
           onConnect={onConnect}
           onNodeClick={onNodeClick}
           onPaneClick={onPaneClick}
@@ -217,7 +170,7 @@ const GraphComponent = () => {
           fitView
         >
           <MiniMap 
-            nodeColor={(node) => node.type === 'function' ? 'blue' : 'green'}
+            nodeColor={(node) => getColor(node.type)}
             pannable={true}
             position="bottom-left"
           />

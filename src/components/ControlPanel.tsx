@@ -5,6 +5,7 @@ import styled from '@emotion/styled';
 import { useLegexContext } from '../context/LegexContext';
 import { useEffect, useState } from 'react';
 import ControlledExpansion from './TreeView'
+import { parseDotFile } from '../utils';
 
 const VisuallyHiddenInput = styled('input')({
   clip: 'rect(0 0 0 0)',
@@ -30,6 +31,7 @@ const ControlPanel = () => {
   const [jsonString, setJsonString] = useState<string | null>(null);
   const [loadingError, setLoadingError] = useState<boolean>(false);
 
+  const [graphDot, setGraphDot] = useState<string>("")
 
   function formatBytes(bytes: number, decimals = 2) {
     if (!+bytes) return '0 Bytes'
@@ -87,17 +89,44 @@ const ControlPanel = () => {
   }
 
   const handleAnalyze = async () => {
+    var chunks 
     console.log("funcName ", context.info.funcName, " dir ", context.info.dirName)
     var status = await fetch(`http://localhost:5000/analyze?func_name=${context.info.funcName}&file_name=${context.info.dirName}`)
     .then(
-      res => console.log(res)
+      res => res.text()
     )
-    // .then(
-    //   data => {
-    //     console.log(data)
+    .then(
+      async data => {
+        console.log(data)
+        setGraphDot(data)
+        //parseDotFile(dotFilePath).then((graphJson) => {
+        // console.log(JSON.stringify(graphJson, null, 2));
+        //});
+        var gJ = await parseDotFile(data)
+        var parsed = JSON.stringify(gJ, null, 2);
+        console.log("PARSED", parsed)
+        context.prepareGraph(JSON.parse(parsed) as GraphData)
+        //setJsonString(parsed)
+        //setLoadingError(false);
+        //setJsonString(parsed)
+      }
+    )
+    // .then((response) => {
+    //   const reader = response.body.getReader();
+    //   // read() returns a promise that resolves when a value has been received
+    //   reader.read().then(function pump({ done, value }) {
+    //     if (done) {
+    //       chunks += value
+    //       return;
+    //     }
+    //     chunks += value
+    //     console.log(chunks)
+    //     // Read some more, and call this function again
+    //     return reader.read().then(pump);
+    //   });
+    // })
 
-    //   }
-    // )
+    
   }
 
   function mockJsonString() { 
